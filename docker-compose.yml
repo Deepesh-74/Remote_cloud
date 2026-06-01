@@ -1,0 +1,29 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      AIMFS_APP_NAME: AI Media Forensics System
+      AIMFS_ENV: development
+      AIMFS_DATABASE_URL: sqlite:///./aimfs.db
+      AIMFS_MODEL_ARCH: efficientnet_b0
+      AIMFS_STORAGE_DIR: storage/uploads
+      AIMFS_ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      AIMFS_MAX_UPLOAD_MB: 20
+    volumes:
+      - ./storage:/app/storage
+      - ./models:/app/models
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend.Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend

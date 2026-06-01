@@ -1,0 +1,13 @@
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.env
+aimfs.db
+storage/uploads
+storage/robustness
+models/checkpoints
+models/exports
+frontend/node_modules
+frontend/.next
+
