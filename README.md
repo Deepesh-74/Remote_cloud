@@ -1,59 +1,18 @@
 # AI Media Forensics System
 
-Production-style AI media forensics platform for detecting whether an uploaded image is real, AI-generated, AI-enhanced, or hybrid. The project is structured as a resume/research-grade prototype with a FastAPI backend, modular PyTorch ML package, forensic analysis modules, robustness evaluation scripts, and a modern dashboard frontend.
+A runnable baseline for inspecting uploaded images and reporting simple forensic signals. It is designed as a transparent starting point for a stronger trained detector, not as proof that an image is authentic or synthetic.
 
-## What This Project Does
+## Current Features
 
-- Classifies images as `real`, `ai_generated`, `ai_enhanced`, or `hybrid`
-- Estimates a likely source generator such as Stable Diffusion, Midjourney, DALL-E, FLUX, or GAN-based
-- Generates explainability heatmaps for suspicious image regions
-- Extracts metadata, EXIF signals, compression indicators, frequency-domain features, and texture inconsistency metrics
-- Produces structured forensic reports through REST endpoints
-- Includes dataset, training, calibration, robustness testing, and evaluation scaffolding
+- FastAPI backend with health, analysis, prediction, and report endpoints
+- Image validation with dimensions, format, EXIF-presence, and pixel-variation signals
+- Explainable heuristic baseline classification for `real` or `ai_enhanced`
+- Next.js upload dashboard
+- Docker Compose setup for backend and frontend
+- A GitHub Actions API health check
+- GitHub Codespaces support for browser and mobile development
 
-The default inference mode uses a transparent heuristic ensemble so the application can run before model weights are trained. For research-grade results, train a model with the scripts in `scripts/` and configure `AIMFS_MODEL_CHECKPOINT`.
-
-## Architecture
-
-```text
-backend/       FastAPI app, REST endpoints, schemas, report orchestration
-frontend/      Next.js dashboard with upload, charts, heatmap, and report panels
-ml/aimfs/      Reusable ML, forensics, training, explainability, and evaluation package
-scripts/       Training, robustness evaluation, and smoke-test entrypoints
-docker/        Backend and frontend Dockerfiles
-tests/         Unit and API test scaffolding
-models/        Local checkpoint output directory
-datasets/      Expected local dataset root
-```
-
-## API Endpoints
-
-- `POST /predict` - classification, confidence, probability distribution, generator estimate
-- `POST /analyze` - forensic indicators only
-- `POST /heatmap` - explainability heatmap as base64 PNG
-- `POST /report` - full prediction, heatmap, and forensic report
-- `GET /health` - service health
-
-## Quick Start
-
-### Backend
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn backend.app.main:app --reload --port 8000
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Open `http://localhost:3000` and set `NEXT_PUBLIC_API_URL=http://localhost:8000` if the API is not on the default port.
+## Run Locally
 
 ### Docker
 
@@ -61,68 +20,52 @@ Open `http://localhost:3000` and set `NEXT_PUBLIC_API_URL=http://localhost:8000`
 docker compose up --build
 ```
 
-## Dataset Layout
+Open the dashboard at `http://localhost:3000`. The API is available at `http://localhost:8000`, including interactive docs at `/docs`.
 
-Place datasets under `datasets/` using class folders:
+### Development
 
-```text
-datasets/media_forensics/
-  real/
-  ai_generated/
-  ai_enhanced/
-  hybrid/
-```
-
-Optional generator metadata can be provided as CSV with columns:
-
-```text
-path,label,generator
-```
-
-## Training
-
-Train a transfer-learning classifier:
+Backend:
 
 ```bash
-python scripts/train.py --data-root datasets/media_forensics --model efficientnet_b0 --epochs 20
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# macOS/Linux
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn backend.app.main:app --reload --port 8000
 ```
 
-Outputs are written to `models/checkpoints/` by default. Configure the backend to use a trained checkpoint:
+Frontend:
 
 ```bash
-AIMFS_MODEL_CHECKPOINT=models/checkpoints/best.pt
+cd frontend
+npm install
+npm run dev
 ```
 
-## Robustness Evaluation
+## API
 
-```bash
-python scripts/evaluate_robustness.py --data-root datasets/media_forensics --checkpoint models/checkpoints/best.pt
-```
+- `GET /health` returns service status
+- `POST /analyze` extracts forensic signals from an image upload
+- `POST /predict` returns the baseline classification and probabilities
+- `POST /report` returns a consolidated report
 
-The evaluator applies brightness, saturation, blur, JPEG compression, resize, screenshot-like recompression, and noise perturbations.
+Use `multipart/form-data` with an image field named `file`.
 
-## Benchmark And False Positive Analysis
+## Use From Mobile
 
-```bash
-python scripts/benchmark.py --data-root datasets/media_forensics --checkpoint models/checkpoints/best.pt
-python scripts/analyze_false_positives.py --benchmark-report storage/benchmark_report.json
-```
+1. Open this repository in GitHub on your phone.
+2. Select **Code** then **Codespaces**.
+3. Create a codespace on `main`.
+4. Open the terminal and run `codex`.
 
-These scripts generate benchmark metrics and surface high-confidence real-image false positives for manual review.
+The development container installs Codex CLI automatically. Authenticate through the prompt, or configure `OPENAI_API_KEY` as a GitHub Codespaces secret. The laptop does not need to remain online.
 
-## Research Notes
+## Limitations And Next Work
 
-This project is designed to be honest about uncertainty:
-
-- The default heuristic detector is explainable but not a substitute for a trained model.
-- Confidence calibration is included so logits can be temperature-scaled after validation.
-- Robustness scripts help expose false positives under common social-media transformations.
-- For publication-style reporting, benchmark against held-out real camera images and multiple generator families.
+The current detector is a heuristic baseline. It should be used only as an investigative signal. The next meaningful technical step is adding a trained model, calibration, robust evaluation data, and heatmap explainability before relying on predictions.
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and adjust paths or service settings.
-
-## Safety And Limitations
-
-AI media forensics is probabilistic. Results should be treated as investigative signals, not absolute proof. A high-quality detector must be trained and validated on carefully separated datasets that include camera diversity, editing diversity, generator diversity, and real-world compression pipelines.
+Copy `.env.example` to `.env` when you need to override application settings.
