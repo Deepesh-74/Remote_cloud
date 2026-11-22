@@ -6,7 +6,7 @@
       "version": "20"
     }
   },
-  "postCreateCommand": "pip install -r requirements.txt && npm install -g @openai/codex@latest",
+  "postCreateCommand": "pip install -r requirements.txt && cd frontend && npm install && npm install -g @openai/codex@latest",
   "forwardPorts": [3000, 8000],
   "portsAttributes": {
     "3000": {
