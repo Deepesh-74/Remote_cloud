@@ -3,8 +3,6 @@
 import { useState } from "react";
 import "./styles.css";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 export default function Home() {
   const [file, setFile] = useState(null);
   const [result, setResult] = useState(null);
@@ -25,7 +23,7 @@ export default function Home() {
     form.append("file", file);
 
     try {
-      const response = await fetch(`${apiUrl}/report`, { method: "POST", body: form });
+      const response = await fetch("/api/report", { method: "POST", body: form });
       const body = await response.json();
       if (!response.ok) throw new Error(body.detail || "Analysis failed.");
       setResult(body);
